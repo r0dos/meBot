@@ -12,7 +12,7 @@ build:
 .PHONY: run
 run:
 	@echo "-- run meBot"
-	nohup ./bin/mebot &
+	./bin/mebot
 
 .PHONY: run_nohup
 run_nohup:
