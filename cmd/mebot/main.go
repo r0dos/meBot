@@ -84,10 +84,14 @@ func run(ctx context.Context) error {
 		}
 		if c.Message().Sender.LastName != "" {
 			userName += " " + c.Message().Sender.LastName
-
 		}
 
-		res := fmt.Sprintf("*%s* %s", userName, strings.Join(c.Args(), " "))
+		args := c.Args()
+		if len(args) == 0 {
+			return c.Send(fmt.Sprintf("*%s* думает...", userName), tele.ModeMarkdown)
+		}
+
+		res := fmt.Sprintf("*%s* %s", userName, strings.Join(args, " "))
 
 		return c.Send(res, tele.ModeMarkdown)
 	})
