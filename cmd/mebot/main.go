@@ -93,6 +93,11 @@ func run(ctx context.Context) error {
 
 		res := fmt.Sprintf("*%s* %s", userName, strings.Join(args, " "))
 
+		if c.Message().ReplyTo != nil {
+			msg, _ := b.Reply(c.Message().ReplyTo, res, tele.ModeMarkdown)
+			return c.Send(msg)
+		}
+
 		return c.Send(res, tele.ModeMarkdown)
 	})
 
