@@ -21,3 +21,14 @@ run_nohup:
 
 .PHONY: build_and_run
 build_and_run: build run
+
+.PHONY: docker
+docker:
+	@echo "-- building docker container"
+	docker build -f Dockerfile -t mebot .
+
+.PHONY: docker_run
+docker_run:
+	@echo "-- starting docker container"
+	docker run -d mebot
+	#docker run --name mebot-prod -v $(pwd)/data:/persis -d mebot

@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
-	"meBot/pkg/config"
+	"meBot/internal/config"
 	"os"
 	"os/signal"
 	"path/filepath"
