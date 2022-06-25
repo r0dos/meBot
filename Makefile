@@ -30,5 +30,5 @@ docker:
 .PHONY: docker_run
 docker_run:
 	@echo "-- starting docker container"
-	docker run -d mebot
+	docker run --name mebot-prod -d mebot
 	#docker run --name mebot-prod -v $(pwd)/data:/persis -d mebot
