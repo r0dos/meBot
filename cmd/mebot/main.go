@@ -14,7 +14,7 @@ import (
 
 	"go.uber.org/zap"
 	tele "gopkg.in/telebot.v3"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 func main() {
