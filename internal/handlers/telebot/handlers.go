@@ -47,9 +47,9 @@ func InitHandlers(b *telebot.Bot) *telebot.Bot {
 	b.Handle("/voteban", func(c telebot.Context) error {
 		if c.Message().ReplyTo != nil {
 			if c.Message().ReplyTo.Sender.Username != "" {
-				return c.Send(
-					fmt.Sprintf("Давно уже пора забанить %s", c.Message().ReplyTo.Sender.Username),
-					telebot.ModeMarkdown)
+				msg := fmt.Sprintf("Давно уже пора забанить @%s", c.Message().ReplyTo.Sender.Username)
+
+				return c.Send(msg, telebot.ModeMarkdown)
 			}
 
 			var userName string
@@ -61,9 +61,10 @@ func InitHandlers(b *telebot.Bot) *telebot.Bot {
 			if c.Message().Sender.LastName != "" {
 				userName += " " + c.Message().Sender.LastName
 			}
-			return c.Send(
-				fmt.Sprintf("Давно уже пора забанить %s", userName),
-				telebot.ModeMarkdown)
+
+			msg := fmt.Sprintf("Давно уже пора забанить %s", userName)
+
+			return c.Send(msg, telebot.ModeMarkdown)
 		}
 
 		return c.Send("Я тоже считаю, что это заслуживает бана!")
