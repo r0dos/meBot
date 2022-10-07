@@ -3,12 +3,11 @@ package main
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"meBot/internal/config"
+	"meBot/internal/handlers/telebot"
 	"os"
 	"os/signal"
 	"path/filepath"
-	"strings"
 	"syscall"
 	"time"
 
@@ -48,7 +47,7 @@ func run(ctx context.Context) error {
 		logger.Fatal("get project work dir", zap.Error(err))
 	}
 	path := filepath.Join(pwd, "config.yml")
-	bytes, err := ioutil.ReadFile(path)
+	bytes, err := os.ReadFile(path)
 	if err != nil {
 		logger.Fatal("read config file path: "+path, zap.Error(err))
 	}
@@ -69,40 +68,14 @@ func run(ctx context.Context) error {
 		logger.Fatal("init telebot", zap.Error(err))
 	}
 
-	// Command: /ping
-	b.Handle("/ping", func(c tele.Context) error {
-		return c.Send("pong")
-	})
-
-	// Command: /me
-	b.Handle("/me", func(c tele.Context) error {
-		b.Delete(c.Message())
-
-		userName := ""
-		if c.Message().Sender.FirstName != "" {
-			userName += c.Message().Sender.FirstName
-		}
-		if c.Message().Sender.LastName != "" {
-			userName += " " + c.Message().Sender.LastName
-		}
-
-		args := c.Args()
-		if len(args) == 0 {
-			return c.Send(fmt.Sprintf("*%s* думает...", userName), tele.ModeMarkdown)
-		}
-
-		res := fmt.Sprintf("*%s* %s", userName, strings.Join(args, " "))
-
-		if c.Message().ReplyTo != nil {
-			msg, _ := b.Reply(c.Message().ReplyTo, res, tele.ModeMarkdown)
-			return c.Send(msg)
-		}
-
-		return c.Send(res, tele.ModeMarkdown)
-	})
+	b = telebot.InitHandlers(b)
 
 	b.Start()
-	defer b.Close()
+	defer func() {
+		_, _ = b.Close()
+	}()
+
 	<-ctx.Done()
+
 	return nil
 }
