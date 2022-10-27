@@ -4,7 +4,7 @@ export GO111MODULE=on
 
 .PHONY: build
 build:
-	@echo "-- building binary with sqlite"
+	@echo "-- building binary"
 	go build \
 		-tags=sqlite \
 		-o ./bin/mebot \
