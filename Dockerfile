@@ -1,6 +1,6 @@
-FROM golang:alpine as builder
+FROM golang:1.19
 
-WORKDIR /src
+WORKDIR /app
 
 COPY go.mod go.sum ./
 
@@ -8,17 +8,6 @@ RUN go mod download
 
 COPY . .
 
-RUN go build \
-    		-o ./bin/mebot \
-    		./cmd/mebot
+RUN make build
 
-FROM alpine
-
-WORKDIR /app
-
-COPY --from=builder /src/bin/mebot .
-COPY --from=builder /src/config.yml .
-#COPY --from=builder /src/locales locales
-#COPY --from=builder /src/sql sql
-
-ENTRYPOINT ["/app/mebot"]
+ENTRYPOINT ["/app/bin/mebot"]

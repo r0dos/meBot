@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 	"meBot/internal/config"
-	"meBot/internal/handlers/telebot"
+	"meBot/internal/provider/storage"
+	"meBot/internal/service/bot"
+	"meBot/pkg/log"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -16,64 +18,82 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+const (
+	configPath = "config.yml"
+
+	pollerTimeout = 10 * time.Second
+
+	envDBPath = "DB_URL"
+)
+
 func main() {
 	// Cancel context if got Ctrl+C signal.
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	c := make(chan os.Signal)
-	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	signal.Notify(c, syscall.SIGTERM, syscall.SIGINT)
 	go func() {
 		<-c
 		// Run Cleanup
 		cancel()
-		os.Exit(1)
+		log.Debug("Catch cancel...")
 	}()
 
 	if err := run(ctx); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		log.Fatal("run", zap.Error(err))
 	}
 }
 
 func run(ctx context.Context) error {
-	logger, _ := zap.NewDevelopment()
-	defer func() { _ = logger.Sync() }()
+	log.Initialize()
+	defer log.Sync()
 
-	// === config
-	config := &config.Config{}
 	pwd, err := os.Getwd()
 	if err != nil {
-		logger.Fatal("get project work dir", zap.Error(err))
+		return fmt.Errorf("get project work dir: %v", err)
 	}
-	path := filepath.Join(pwd, "config.yml")
+
+	path := filepath.Join(pwd, configPath)
+
 	bytes, err := os.ReadFile(path)
 	if err != nil {
-		logger.Fatal("read config file path: "+path, zap.Error(err))
+		return fmt.Errorf("read config file path %s: %v", path, err)
 	}
-	err = yaml.Unmarshal(bytes, &config)
-	if err != nil {
-		logger.Fatal("unmarshal config", zap.Error(err))
-	}
-	// === config.end
 
-	// telebot
+	cfg := &config.Config{}
+	if err := yaml.Unmarshal(bytes, cfg); err != nil {
+		return fmt.Errorf("unmarshal config: %v", err)
+	}
+
+	db, err := initDB(os.Getenv(envDBPath))
+	if err != nil {
+		return fmt.Errorf("init db: %v", err)
+	}
+
+	defer func() {
+		_ = db.Close()
+	}()
+
+	stor, err := storage.NewStorage(db)
+	if err != nil {
+		return fmt.Errorf("init storage: %v", err)
+	}
+
 	pref := tele.Settings{
-		Token:  config.BotToken,
-		Poller: &tele.LongPoller{Timeout: 10 * time.Second},
+		Token:  cfg.BotToken,
+		Poller: &tele.LongPoller{Timeout: pollerTimeout},
 	}
 
 	b, err := tele.NewBot(pref)
 	if err != nil {
-		logger.Fatal("init telebot", zap.Error(err))
+		return fmt.Errorf("init telebot: %v", err)
 	}
 
-	b = telebot.InitHandlers(b)
+	service := bot.NewMeBot(b, stor)
 
-	b.Start()
-	defer func() {
-		_, _ = b.Close()
-	}()
+	service.Start()
+	defer service.Close()
 
 	<-ctx.Done()
 

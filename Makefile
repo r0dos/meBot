@@ -4,8 +4,17 @@ export GO111MODULE=on
 
 .PHONY: build
 build:
-	@echo "-- building binary"
+	@echo "-- building binary with sqlite"
 	go build \
+		-tags=sqlite \
+		-o ./bin/mebot \
+		./cmd/mebot
+
+.PHONY: build_postgres
+build_postgres:
+	@echo "-- building binary with postgres"
+	go build \
+		-tags=postgres \
 		-o ./bin/mebot \
 		./cmd/mebot
 
@@ -30,5 +39,11 @@ docker:
 .PHONY: docker_run
 docker_run:
 	@echo "-- starting docker container"
-	docker run --name mebot-prod -d mebot
-	#docker run --name mebot-prod -v $(pwd)/data:/persis -d mebot
+	docker run --name mebot --rm \
+	-v $(pwd)/data:/persis \
+	--env DB_URL=/persis/me_bot.sqlite \
+	-d mebot
+#	docker run --name mebot --rm \
+# 	-v /Users/r0dos/go/src/meBot/data:/persis \
+# 	--env DB_URL=/persis/me_bot.sqlite \
+# 	-d mebot
