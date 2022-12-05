@@ -1,9 +1,12 @@
 package bot
 
 import (
+	"context"
+	"meBot/pkg/log"
+	"time"
+
 	"go.uber.org/zap"
 	"gopkg.in/telebot.v3"
-	"meBot/pkg/log"
 )
 
 type Storage interface {
@@ -12,15 +15,24 @@ type Storage interface {
 	Reset(chatID, userID int64) error
 }
 
-type MeBot struct {
-	bot     *telebot.Bot
-	storage Storage
+type Registry interface {
+	Add(key, code string) (context.Context, error)
+	Update(key, code string) error
+	Removal(key string) error
+	Send(key, v string) error
 }
 
-func NewMeBot(b *telebot.Bot, s Storage) *MeBot {
+type MeBot struct {
+	bot      *telebot.Bot
+	storage  Storage
+	registry Registry
+}
+
+func NewMeBot(b *telebot.Bot, s Storage, r Registry) *MeBot {
 	me := &MeBot{
-		bot:     b,
-		storage: s,
+		bot:      b,
+		storage:  s,
+		registry: r,
 	}
 
 	me.registerMiddlewares()
@@ -34,8 +46,16 @@ func (m *MeBot) Start() {
 }
 
 func (m *MeBot) Close() {
-	_, err := m.bot.Close()
-	if err != nil {
-		log.Error("bot close", zap.Error(err))
+	for i := 0; i < 5; i++ {
+		c, err := m.bot.Close()
+		if err != nil {
+			log.Error("bot close", zap.Error(err))
+		}
+
+		if c {
+			return
+		}
+
+		time.Sleep(time.Second)
 	}
 }

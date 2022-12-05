@@ -3,6 +3,7 @@ module meBot
 go 1.19
 
 require (
+	github.com/dchest/captcha v1.0.0
 	github.com/mattn/go-sqlite3 v1.14.15
 	github.com/pressly/goose v2.7.0+incompatible
 	github.com/pressly/goose/v3 v3.7.0

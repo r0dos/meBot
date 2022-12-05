@@ -2,8 +2,9 @@ package bot
 
 import (
 	"fmt"
-	"gopkg.in/telebot.v3"
 	"meBot/pkg/log"
+
+	"gopkg.in/telebot.v3"
 
 	"go.uber.org/zap"
 	"gopkg.in/telebot.v3/middleware"
@@ -63,6 +64,22 @@ func middlewareCheckAdminsReplyTo(next telebot.HandlerFunc) telebot.HandlerFunc 
 
 		return next(c)
 	}
+}
+
+func middlewareNotAdmin(next telebot.HandlerFunc) telebot.HandlerFunc {
+	return func(c telebot.Context) error {
+		admins, err := c.Bot().AdminsOf(c.Chat())
+		if err != nil {
+			return fmt.Errorf("get admins for chatID %d: %v", c.Chat().ID, err)
+		}
+
+		if isAdmin(c.Sender(), admins) {
+			return nil
+		}
+
+		return next(c)
+	}
+
 }
 
 func isAdmin(user *telebot.User, admins []telebot.ChatMember) bool {

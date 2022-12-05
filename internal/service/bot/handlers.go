@@ -38,6 +38,14 @@ func (m *MeBot) registerHandlers() {
 
 	//Command: /help
 	groupOnly.Handle("/help", m.handlerHelp)
+
+	// Command: /captcha
+	groupOnly.Handle("/captcha", m.handlerCaptcha, middlewareNotAdmin)
+
+	groupOnly.Handle(telebot.OnUserJoined, m.handlerCaptcha)
+
+	groupOnly.Handle("\fcode", m.handlerCode)
+	groupOnly.Handle("\frefresh", m.handlerRefresh)
 }
 
 func (m *MeBot) handlerHelp(c telebot.Context) error {

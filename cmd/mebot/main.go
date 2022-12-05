@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"meBot/internal/config"
+	"meBot/internal/provider/registry"
 	"meBot/internal/provider/storage"
 	"meBot/internal/service/bot"
 	"meBot/pkg/log"
@@ -80,6 +81,8 @@ func run(ctx context.Context) error {
 		return fmt.Errorf("init storage: %v", err)
 	}
 
+	reg := registry.NewRegistry(ctx)
+
 	pref := tele.Settings{
 		Token:  cfg.BotToken,
 		Poller: &tele.LongPoller{Timeout: pollerTimeout},
@@ -90,7 +93,7 @@ func run(ctx context.Context) error {
 		return fmt.Errorf("init telebot: %v", err)
 	}
 
-	service := bot.NewMeBot(b, stor)
+	service := bot.NewMeBot(b, stor, reg)
 
 	service.Start()
 	defer service.Close()
