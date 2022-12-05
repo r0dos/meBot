@@ -40,9 +40,9 @@ func (m *MeBot) registerHandlers() {
 	groupOnly.Handle("/help", m.handlerHelp)
 
 	// Command: /captcha
-	groupOnly.Handle("/captcha", m.handlerCaptcha, middlewareNotAdmin)
+	groupOnly.Handle("/captcha", m.handlerToCaptcha, middlewareCheckAdmins)
 
-	groupOnly.Handle(telebot.OnUserJoined, m.handlerCaptcha)
+	groupOnly.Handle(telebot.OnUserJoined, m.handlerWelcomeCaptcha)
 
 	groupOnly.Handle("\fcode", m.handlerCode)
 	groupOnly.Handle("\frefresh", m.handlerRefresh)

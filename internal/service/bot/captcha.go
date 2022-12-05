@@ -17,7 +17,19 @@ const countBtn = 5
 
 const waitTime = time.Minute * 2
 
-func (m *MeBot) handlerCaptcha(c telebot.Context) error {
+func (m *MeBot) handlerToCaptcha(c telebot.Context) error {
+	if c.Message().ReplyTo == nil {
+		return nil
+	}
+
+	return m.handlerCaptcha(c.Message().ReplyTo)
+}
+
+func (m *MeBot) handlerWelcomeCaptcha(c telebot.Context) error {
+	return m.handlerCaptcha(c.Message())
+}
+
+func (m *MeBot) handlerCaptcha(message *telebot.Message) error {
 	dig := captcha.RandomDigits(countBtn)
 	img := captcha.NewImage("", dig, 240, 80)
 
@@ -36,7 +48,7 @@ func (m *MeBot) handlerCaptcha(c telebot.Context) error {
 
 	keyboard := getKeyboard(codeInt)
 
-	username := getUsername(c.Message())
+	username := getUsername(message)
 	text := fmt.Sprintf("Привет, %s! Пройди анти-спам проверку за 2 мин.", username)
 
 	photo := &telebot.Photo{
@@ -46,7 +58,7 @@ func (m *MeBot) handlerCaptcha(c telebot.Context) error {
 		Caption: text,
 	}
 
-	msg, err := c.Bot().Reply(c.Message(), photo, keyboard)
+	msg, err := m.bot.Reply(message, photo, keyboard)
 	if err != nil {
 		return fmt.Errorf("send reply captcha: %v", err)
 	}
