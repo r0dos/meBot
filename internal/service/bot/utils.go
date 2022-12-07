@@ -58,7 +58,7 @@ func intToString(i []int) string {
 }
 
 func saveFile(name string, img *captcha.Image) (string, error) {
-	filePath := fmt.Sprintf("tmp/%s.png", name)
+	filePath := fmt.Sprintf(pathFormat, pathTemp, name)
 
 	file, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE, 0600)
 	if err != nil {

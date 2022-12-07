@@ -42,10 +42,10 @@ func (m *MeBot) registerHandlers() {
 	// Command: /captcha
 	groupOnly.Handle("/captcha", m.handlerToCaptcha, middlewareCheckAdmins)
 
-	groupOnly.Handle(telebot.OnUserJoined, m.handlerWelcomeCaptcha)
+	m.bot.Handle(telebot.OnUserJoined, m.handlerWelcomeCaptcha)
 
-	groupOnly.Handle("\fcode", m.handlerCode)
-	groupOnly.Handle("\frefresh", m.handlerRefresh)
+	m.bot.Handle("\fcode", m.handlerCode)
+	m.bot.Handle("\frefresh", m.handlerRefresh)
 }
 
 func (m *MeBot) handlerHelp(c telebot.Context) error {

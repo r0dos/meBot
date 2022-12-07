@@ -3,10 +3,16 @@ package bot
 import (
 	"context"
 	"meBot/pkg/log"
+	"os"
 	"time"
 
 	"go.uber.org/zap"
 	"gopkg.in/telebot.v3"
+)
+
+const (
+	pathTemp   = "tmp"
+	pathFormat = "%s/%s.png"
 )
 
 type Storage interface {
@@ -37,6 +43,10 @@ func NewMeBot(b *telebot.Bot, s Storage, r Registry) *MeBot {
 
 	me.registerMiddlewares()
 	me.registerHandlers()
+
+	if err := os.MkdirAll(pathTemp, 0777); err != nil {
+		log.Error("create temp path", zap.Error(err))
+	}
 
 	return me
 }
