@@ -13,7 +13,7 @@ import (
 func (m *MeBot) registerMiddlewares() {
 	m.bot.Use(middleware.Recover(func(err error) {
 		log.Error("me bot in panic", zap.Error(err))
-	}))
+	}), middleware.AutoRespond())
 }
 
 func middlewareFromGroup(next telebot.HandlerFunc) telebot.HandlerFunc {

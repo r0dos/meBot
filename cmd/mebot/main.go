@@ -95,7 +95,7 @@ func run(ctx context.Context) error {
 
 	service := bot.NewMeBot(b, stor, reg)
 
-	service.Start()
+	go service.Start()
 	defer service.Close()
 
 	<-ctx.Done()
